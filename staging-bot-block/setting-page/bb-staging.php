@@ -1,43 +1,45 @@
 <?php
 
-//GET BB Redirect ID
-
-add_filter( 'bb_redirect_settings_plugin_filter', 'get_bb_redirect_settings_post_id' );
-
 function get_bb_redirect_settings_post_id() {
 
-	$bb_redirect_setting_id = "";
-
-	$bb_redirect_setting_args = array(
-
-		'numberposts' => 1,
-
-		'post_title'  => 'Block Bots Redirect',
-
-		'post_type'   => 'bb_redirect_burgeon',
-
-		'orderby'     => 'date',
-
-		'order'       => 'DESC'
-
+	$bb_redirect_setting_id = '';
+	$queries                = array(
+		array(
+			'numberposts' => 1,
+			'post_type'   => 'bb_redirect_npm',
+			'post_status' => 'any',
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+		),
+		array(
+			'numberposts' => 1,
+			'post_type'   => 'any',
+			'post_status' => 'any',
+			'orderby'     => 'date',
+			'order'       => 'DESC',
+			'meta_key'    => 'bb_redirect_enabled',
+		),
 	);
 
-	$bb_redirect_setting_array = get_posts( $bb_redirect_setting_args );
+	foreach ( $queries as $bb_redirect_setting_args ) {
+		$bb_redirect_setting_array = get_posts( $bb_redirect_setting_args );
 
-	if ( ! empty( $bb_redirect_setting_array ) ) {
-
-		foreach ( $bb_redirect_setting_array as $bb_rows ) {
-
-			$bb_redirect_setting_id = $bb_rows->ID;
-
+		if ( empty( $bb_redirect_setting_array ) ) {
+			continue;
 		}
 
+		foreach ( $bb_redirect_setting_array as $bb_rows ) {
+			$bb_redirect_setting_id = $bb_rows->ID;
+		}
+
+		if ( $bb_redirect_setting_id ) {
+			break;
+		}
 	}
 
 	return $bb_redirect_setting_id;
 
 }
-
 /**
  * Adds a new menu item for the bb plugin.
  *
@@ -47,23 +49,23 @@ function get_bb_redirect_settings_post_id() {
  */
 function bb_page_menu() {
 
-	add_menu_page(
+        add_menu_page(
 
-		__( 'Bot BLock', 'bot-bLockdomain' ),
+                __( 'Bot BLock', 'bot-bLockdomain' ),
 
-		__( 'Bot BLock', 'bot-bLockdomain' ),
+                __( 'Bot BLock', 'bot-bLockdomain' ),
 
-		'manage_options',
+                'manage_options',
 
-		'block-bot-redirect-setting-page',
+                'block-bot-redirect-setting-page',
 
-		'bb_admin_page_contents',
+                'bb_admin_page_contents',
 
-		'dashicons-schedule',
+                'dashicons-schedule',
 
-		3
+                3
 
-	);
+        );
 
 }
 
@@ -80,196 +82,111 @@ add_action( 'admin_menu', 'bb_page_menu' );
  */
 function bb_admin_page_contents() {
 
-	$bb_redirect_setting_id = get_bb_redirect_settings_post_id();
+        $options = staging_bot_block_get_options();
+        ?>
+        <div class="wrap">
+                <h1 class="wp-heading-inline">
+                        <?php esc_html_e( 'Staging Bot Block', 'bot-bLockdomain' ); ?>
+                </h1>
+                <p></p>
+        </div>
+        <?php
+        if ( isset( $_GET['settings-updated'] ) ) {
+                add_settings_error( 'staging_bot_block_options', 'staging_bot_block_options', __( 'Settings saved.', 'bot-bLockdomain' ), 'updated' );
+        }
+        settings_errors( 'staging_bot_block_options' );
+        ?>
+        <form method="post" id="bb_redirect_settings_mainform" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+                <?php settings_fields( 'staging_bot_block_options_group' ); ?>
+                <h1 class="screen-reader-text">Staging Bot Block</h1>
 
-	$bb_enabled_initialize = $bb_choice_val_initialize = $bb_enable_warning_initialize = $bb_url_val_initialize = "";
+                <p><?php esc_html_e( 'A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about setting robots.txt to nofollow and accidentally deindexing the production site.', 'bot-bLockdomain' ); ?></p>
+                <p><?php printf( wp_kses_post( __( 'Brought to you by the team at %s.', 'bot-bLockdomain' ) ), '<a href="' . esc_url( 'https://www.netprofitmarketing.com' ) . '" target="_blank" rel="noopener noreferrer">Net Profit Marketing</a>' ); ?></p>
 
+                <table class="form-table" role="presentation">
+                        <tbody>
+                                <tr>
+                                        <th scope="row">
+                                                <label for="staging_bot_block_enabled"><?php esc_html_e( 'Enable Staging Bot Block', 'bot-bLockdomain' ); ?></label>
+                                        </th>
+                                        <td>
+                                                <label for="staging_bot_block_enabled">
+                                                        <input type="checkbox" name="staging_bot_block_options[enabled]" id="staging_bot_block_enabled" value="1" <?php checked( ! empty( $options['enabled'] ) ); ?>>
+                                                        <?php esc_html_e( 'Enable Staging Bot Block', 'bot-bLockdomain' ); ?>
+                                                </label>
+                                                <p class="description"><?php esc_html_e( 'Turn the plugin on or off for this site.', 'bot-bLockdomain' ); ?></p>
+                                        </td>
+                                </tr>
+                                <tr>
+                                        <th scope="row"><?php esc_html_e( 'Bot handling mode', 'bot-bLockdomain' ); ?></th>
+                                        <td>
+                                                <fieldset>
+                                                        <legend class="screen-reader-text">
+                                                                <span><?php esc_html_e( 'Bot handling mode', 'bot-bLockdomain' ); ?></span>
+                                                        </legend>
+                                                        <label for="staging_bot_block_mode_block">
+                                                                <input type="radio" id="staging_bot_block_mode_block" name="staging_bot_block_options[mode]" value="block" <?php checked( $options['mode'], 'block' ); ?>>
+                                                                <?php esc_html_e( 'Block search engine bots (recommended for staging)', 'bot-bLockdomain' ); ?>
+                                                        </label><br>
+                                                        <label for="staging_bot_block_mode_redirect_bots">
+                                                                <input type="radio" id="staging_bot_block_mode_redirect_bots" name="staging_bot_block_options[mode]" value="redirect_bots" <?php checked( $options['mode'], 'redirect_bots' ); ?>>
+                                                                <?php esc_html_e( 'Redirect search engine bots to live site', 'bot-bLockdomain' ); ?>
+                                                        </label><br>
+                                                        <label for="staging_bot_block_mode_redirect_all">
+                                                                <input type="radio" id="staging_bot_block_mode_redirect_all" name="staging_bot_block_options[mode]" value="redirect_all" <?php checked( $options['mode'], 'redirect_all' ); ?>>
+                                                                <?php esc_html_e( 'Redirect everyone (bots and users) to live site', 'bot-bLockdomain' ); ?>
+                                                        </label>
+                                                </fieldset>
+                                        </td>
+                                </tr>
+                                <tr>
+                                        <th scope="row">
+                                                <label for="staging_bot_block_warning_banner"><?php esc_html_e( 'Show admin warning banner', 'bot-bLockdomain' ); ?></label>
+                                        </th>
+                                        <td>
+                                                <label for="staging_bot_block_warning_banner">
+                                                        <input type="checkbox" name="staging_bot_block_options[warning_banner]" id="staging_bot_block_warning_banner" value="1" <?php checked( ! empty( $options['warning_banner'] ) ); ?>>
+                                                        <?php esc_html_e( 'Show admin warning banner', 'bot-bLockdomain' ); ?>
+                                                </label>
+                                                <p class="description"><?php esc_html_e( 'Show a persistent notice in the WordPress admin when Staging Bot Block is enabled.', 'bot-bLockdomain' ); ?></p>
+                                        </td>
+                                </tr>
+                                <tr>
+                                        <th scope="row">
+                                                <label for="staging_bot_block_redirect_url"><?php esc_html_e( 'Redirect URL', 'bot-bLockdomain' ); ?></label>
+                                        </th>
+                                        <td>
+                                                <input class="regular-text" type="text" name="staging_bot_block_options[redirect_url]" id="staging_bot_block_redirect_url" value="<?php echo esc_attr( $options['redirect_url'] ); ?>" placeholder="https://example.com/">
+                                                <p class="description"><?php esc_html_e( 'Target URL for redirects in “Redirect” modes, for example the production site homepage.', 'bot-bLockdomain' ); ?></p>
+                                        </td>
+                                </tr>
+                                <tr>
+                                        <th scope="row">
+                                                <label for="staging_bot_block_redirect_type"><?php esc_html_e( 'Redirect type', 'bot-bLockdomain' ); ?></label>
+                                        </th>
+                                        <td>
+                                                <select name="staging_bot_block_options[redirect_type]" id="staging_bot_block_redirect_type">
+                                                        <option value="302" <?php selected( (int) $options['redirect_type'], 302 ); ?>><?php esc_html_e( 'Temporary (302)', 'bot-bLockdomain' ); ?></option>
+                                                        <option value="301" <?php selected( (int) $options['redirect_type'], 301 ); ?>><?php esc_html_e( 'Permanent (301)', 'bot-bLockdomain' ); ?></option>
+                                                </select>
+                                        </td>
+                                </tr>
+                                <tr>
+                                        <th scope="row">
+                                                <label for="staging_bot_block_extra_user_agents"><?php esc_html_e( 'Additional user agents to block', 'bot-bLockdomain' ); ?></label>
+                                        </th>
+                                        <td>
+                                                <textarea name="staging_bot_block_options[extra_user_agents]" id="staging_bot_block_extra_user_agents" rows="5" class="large-text code"><?php echo esc_textarea( $options['extra_user_agents'] ); ?></textarea>
+                                                <p class="description"><?php esc_html_e( 'Optional. One user agent or substring per line. These will be added to the default bot list.', 'bot-bLockdomain' ); ?></p>
+                                        </td>
+                                </tr>
+                        </tbody>
+                </table>
 
+                <?php submit_button(); ?>
 
-	if ( $bb_redirect_setting_id != "" ) {
+        </form>
 
-		if ( get_post_meta( $bb_redirect_setting_id, 'bb_redirect_enabled', true ) ) {
-
-			$bb_enabled_initialize = get_post_meta( $bb_redirect_setting_id, 'bb_redirect_enabled', true ) == 1 ? "checked" : "";
-
-		}
-
-		if ( get_post_meta( $bb_redirect_setting_id, 'bb_redirect_choice', true ) ) {
-
-			$bb_choice_val_initialize = get_post_meta( $bb_redirect_setting_id, 'bb_redirect_choice', true );
-
-		} else {
-
-			$bb_choice_val_initialize = "Block Bots";
-
-		}
-
-		if ( get_post_meta( $bb_redirect_setting_id, 'bb_redirect_enable_warning_banner', true ) ) {
-
-			$bb_enable_warning_initialize = get_post_meta( $bb_redirect_setting_id, 'bb_redirect_enable_warning_banner', true ) == 1 ? "checked" : "";
-
-		}
-
-		if ( get_post_meta( $bb_redirect_setting_id, 'bb_redirect_url', true ) ) {
-
-			$bb_url_val_initialize = get_post_meta( $bb_redirect_setting_id, 'bb_redirect_url', true );
-
-		}
-		if ( get_post_meta( $bb_redirect_setting_id, 'bb_redirect_type', true ) ) {
-
-			$bb_redirect_type_initialize = get_post_meta( $bb_redirect_setting_id, 'bb_redirect_type', true );
-
-		}
-
-	}
-
-	?>
-
-	<div class="wrap">
-
-		<h1 class="wp-heading-inline">
-			<?php esc_html_e( 'Staging Bot Block', 'bot-bLockdomain' ); ?>
-		</h1>
-
-		<p></p>
-
-
-
-	</div>
-
-	<form method="post" id="bb_redirect_settings_mainform" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-		enctype="multipart/form-data" onsubmit="return bb_redirect_settings_mainform_submit_validation();">
-
-		<h1 class="screen-reader-text">Staging Bot Block</h1>
-
-		<?php if ( isset( $_COOKIE['bb_submit_message'] ) && $_COOKIE['bb_submit_message'] == "Success" ) {
-
-			setcookie( "bb_submit_message", "", time() - 3600 );
-
-			?>
-
-			<div id="message" class="updated">
-
-				<p>Bots Block Redirect setting has been saved successfully.</p>
-
-			</div>
-
-		<?php } ?>
-
-		<p>A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging
-			sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about
-			setting robots.txt to nofollow and accidentally deindexing the production site.</p>
-		<p>Brought to you by the team at <a href='https://www.netprofitmarketing.com' target='_blank'>Net Profit
-				Marketing</a>.
-		</p>
-
-		<table class="form-table">
-			<tbody>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="bb_redirect_enabled">Enable/Disable </label>
-					</th>
-					<td class="forminp">
-						<fieldset>
-							<legend class="screen-reader-text"><span>Enable/Disable</span></legend>
-							<label for="bb_redirect_enabled">
-								<input class="" type="checkbox" name="bb_redirect_enabled" id="bb_redirect_enabled" <?php echo $bb_enabled_initialize; ?> style="" value="1"> Enable bot block
-							</label><br>
-						</fieldset>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="bb_redirect_title">Block/Redirect settings
-							<span class="bb-redirect-tool" data-tip="<?php echo esc_attr( 'Options to block bots (i.e. Google, Bing) with a 404 error, redirect bots to a different URL or redirect both bots and users (except for wp-admin).' ) ?>" tabindex="2">
-								<img class="bb-redirect-tool-icon-img" src="<?php echo plugin_dir_url( __FILE__ ) . '../assets/images/info.svg'; ?>" alt="info" width="12" height="12">
-							</span>
-						</label>
-					</th>
-					<td class="forminp">
-						<fieldset>
-							<legend class="screen-reader-text"><span>Block/Redirect settings</span></legend>
-							<label for="block_bots">
-								<input type="radio" id="block_bots" name="bb_redirect_choice" <?php echo $bb_choice_val_initialize == "Block Bots" ? "checked" : "" ?> value="Block Bots">
-								Block Bots
-							</label>
-							<label for="redirect_bots">
-								<input type="radio" id="redirect_bots" name="bb_redirect_choice" <?php echo $bb_choice_val_initialize == "Redirect Bots" ? "checked" : "" ?> value="Redirect Bots">
-								Redirect Bots
-							</label>
-							<label for="redirect_bots_user">
-								<input type="radio" id="redirect_bots_user" name="bb_redirect_choice" <?php echo $bb_choice_val_initialize == "Redirect Bots & Users" ? "checked" : "" ?> value="Redirect Bots & Users">
-								Redirect Bots & Users
-							</label>
-						</fieldset>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="bb_redirect_enable_warning_banner">Warning Banner </label>
-					</th>
-					<td class="forminp">
-						<fieldset>
-							<legend class="screen-reader-text"><span>Enable Warning Banner</span></legend>
-							<label for="bb_redirect_enable_warning_banner">
-								<input class="" type="checkbox" name="bb_redirect_enable_warning_banner" <?php echo $bb_enable_warning_initialize; ?> id="bb_redirect_enable_warning_banner" style="" value="1"> Enable Warning Banner
-							</label>
-						</fieldset>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="bb_redirect_description">Redirect URL
-							<span class="bb-redirect-tool" data-tip="Enter the URL, on which you want to redirect." tabindex="2">
-								<img class="bb-redirect-tool-icon-img" src="<?php echo plugin_dir_url( __FILE__ ) . '../assets/images/info.svg'; ?>" alt="info" width="12" height="12">
-							</span>
-						</label>
-					</th>
-					<td class="forminp">
-						<fieldset>
-							<legend class="screen-reader-text"><span>Redirect URL</span></legend>
-							<input class="input-text regular-input" type="text" name="bb_redirect_url" id="bb_redirect_url" style="width: 100%;max-width: 400px;" placeholder="https://example.com/" value="<?php echo $bb_url_val_initialize; ?>">
-							<p class='error bb_redirect_url_error_cls' id="bb_redirect_url_error"></p>
-						</fieldset>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="bb_redirect_description">Redirect Type
-							<span class="bb-redirect-tool" data-tip="Set Redirect Type." tabindex="2">
-								<img class="bb-redirect-tool-icon-img" src="<?php echo plugin_dir_url( __FILE__ ) . '../assets/images/info.svg'; ?>" alt="info" width="12" height="12">
-							</span>
-						</label>
-					</th>
-					<td class="forminp">
-						<fieldset>
-							<legend class="screen-reader-text"><span>Redirect Type</span></legend>
-							<select name="bb_redirect_type" id="bb_redirect_type" style="width: 100%;max-width: 400px;">
-								<option value="302" <?php echo $bb_redirect_type_initialize == "302" ? "selected" : ""; ?>>Temporary (302)</option>
-								<option value="301" <?php echo $bb_redirect_type_initialize == "301" ? "selected" : ""; ?>>Permanent (301)</option>
-							</select>
-							<p class='error bb_redirect_type_error_cls' id="bb_redirect_type_error"></p>
-						</fieldset>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<p class="submit">
-
-			<input type="hidden" name="action" value="bb_redirect_setting_form_submition">
-
-			<button name="save" class="button-primary save-button" type="submit" value="Save">Save</button>
-
-		</p>
-
-	</form>
-
-	<?php
+        <?php
 
 }
-
-
-
-
-

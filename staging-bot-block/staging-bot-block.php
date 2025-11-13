@@ -78,3 +78,5 @@ require plugin_dir_path( __FILE__ ) . 'include/bb-detects-bots.php';
 
 require plugin_dir_path( __FILE__ ) . 'include/bb-redirect-rules.php';
 
+register_activation_hook( __FILE__, 'staging_bot_block_activate' );
+
