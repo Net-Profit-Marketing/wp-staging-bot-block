@@ -1,61 +1,113 @@
 <?php
 
-/**
- * Handles the submission of the bb redirect settings form.
- *
- * This function is responsible for sanitizing, validating and saving the settings from the bb redirect settings form.
- *
- * @return void
- */
-function bb_redirect_setting_form_submition_save_update_function() {
-
-	$bb_redirect_setting_id = get_bb_redirect_settings_post_id();
-
-	if ( $bb_redirect_setting_id == "" ) {
-
-		$bb_redirect_setting_post_arr = array(
-
-			'post_title'   => 'Block Bots Redirect',
-			'post_content' => 'A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about setting robots.',
-			'post_status'  => 'publish',
-
-			'post_author'  => get_current_user_id(),
-
-			'post_type'    => 'bb_redirect_burgeon'
-
-		);
-
-		$bb_redirect_setting_id = wp_insert_post( $bb_redirect_setting_post_arr, true );
-	}
-
-	if ( isset( $bb_redirect_setting_id ) && $bb_redirect_setting_id != "" && ! empty( $bb_redirect_setting_id ) ) {
-
-		if ( ! add_post_meta( $bb_redirect_setting_id, 'bb_redirect_enabled', sanitize_text_field( $_POST['bb_redirect_enabled'] ), true ) ) {
-
-			update_post_meta( $bb_redirect_setting_id, 'bb_redirect_enabled', sanitize_text_field( $_POST['bb_redirect_enabled'] ) );
-		}
-
-		if ( ! add_post_meta( $bb_redirect_setting_id, 'bb_redirect_choice', sanitize_text_field( $_POST['bb_redirect_choice'] ), true ) ) {
-
-			update_post_meta( $bb_redirect_setting_id, 'bb_redirect_choice', sanitize_text_field( $_POST['bb_redirect_choice'] ) );
-		}
-
-		if ( ! add_post_meta( $bb_redirect_setting_id, 'bb_redirect_enable_warning_banner', sanitize_text_field( $_POST['bb_redirect_enable_warning_banner'] ), true ) ) {
-
-			update_post_meta( $bb_redirect_setting_id, 'bb_redirect_enable_warning_banner', sanitize_text_field( $_POST['bb_redirect_enable_warning_banner'] ) );
-		}
-
-		if ( ! add_post_meta( $bb_redirect_setting_id, 'bb_redirect_url', sanitize_text_field( $_POST['bb_redirect_url'] ), true ) ) {
-
-			update_post_meta( $bb_redirect_setting_id, 'bb_redirect_url', sanitize_text_field( $_POST['bb_redirect_url'] ) );
-		}
-	}
-
-	setcookie( "bb_submit_message", "Success", time() + ( 10 ), "/" );
-
-	wp_safe_redirect( esc_url( site_url( '/wp-admin/admin.php?page=block-bot-redirect-setting-page' ) ) );
-
-	exit();
+function staging_bot_block_get_default_options() {
+        return array(
+                'enabled'           => 1,
+                'mode'              => 'block',
+                'redirect_url'      => '',
+                'redirect_type'     => 302,
+                'warning_banner'    => 1,
+                'extra_user_agents' => '',
+        );
 }
 
-add_action( 'admin_post_bb_redirect_setting_form_submition', 'bb_redirect_setting_form_submition_save_update_function' );
+function staging_bot_block_register_settings() {
+        register_setting( 'staging_bot_block_options_group', 'staging_bot_block_options', 'staging_bot_block_sanitize_options' );
+}
+add_action( 'admin_init', 'staging_bot_block_register_settings' );
+
+function staging_bot_block_sanitize_options( $input ) {
+        $input   = is_array( $input ) ? $input : array();
+        $output  = staging_bot_block_get_default_options();
+        $allowed = array( 'block', 'redirect_bots', 'redirect_all' );
+
+        $output['enabled'] = ! empty( $input['enabled'] ) ? 1 : 0;
+
+        $mode = isset( $input['mode'] ) ? sanitize_key( $input['mode'] ) : 'block';
+        $output['mode'] = in_array( $mode, $allowed, true ) ? $mode : 'block';
+
+        $redirect_url             = isset( $input['redirect_url'] ) ? trim( wp_unslash( $input['redirect_url'] ) ) : '';
+        $output['redirect_url']   = esc_url_raw( $redirect_url );
+        $redirect_type            = isset( $input['redirect_type'] ) ? (int) $input['redirect_type'] : 302;
+        $output['redirect_type']  = 301 === $redirect_type ? 301 : 302;
+        $output['warning_banner'] = ! empty( $input['warning_banner'] ) ? 1 : 0;
+        $extra_user_agents        = isset( $input['extra_user_agents'] ) ? wp_unslash( $input['extra_user_agents'] ) : '';
+        $output['extra_user_agents'] = trim( $extra_user_agents );
+
+        return $output;
+}
+
+function staging_bot_block_get_options() {
+        $options = get_option( 'staging_bot_block_options', null );
+
+        if ( null === $options ) {
+                $options = staging_bot_block_migrate_legacy_settings();
+        }
+
+        if ( ! is_array( $options ) ) {
+                $options = array();
+        }
+
+        return wp_parse_args( $options, staging_bot_block_get_default_options() );
+}
+
+function staging_bot_block_migrate_legacy_settings() {
+        $defaults       = staging_bot_block_get_default_options();
+        $legacy_options = array();
+        $post_id        = get_bb_redirect_settings_post_id();
+
+        if ( $post_id ) {
+                $legacy_enabled = get_post_meta( $post_id, 'bb_redirect_enabled', true );
+                if ( '' !== $legacy_enabled ) {
+                        $legacy_options['enabled'] = (int) ( 1 === (int) $legacy_enabled );
+                }
+
+                $legacy_choice = get_post_meta( $post_id, 'bb_redirect_choice', true );
+                if ( $legacy_choice ) {
+                        $legacy_options['mode'] = staging_bot_block_map_legacy_mode( $legacy_choice );
+                }
+
+                $legacy_url = get_post_meta( $post_id, 'bb_redirect_url', true );
+                if ( $legacy_url ) {
+                        $legacy_options['redirect_url'] = $legacy_url;
+                }
+
+                $legacy_type = (int) get_post_meta( $post_id, 'bb_redirect_type', true );
+                if ( in_array( $legacy_type, array( 301, 302 ), true ) ) {
+                        $legacy_options['redirect_type'] = $legacy_type;
+                }
+
+                $legacy_banner = get_post_meta( $post_id, 'bb_redirect_enable_warning_banner', true );
+                if ( '' !== $legacy_banner ) {
+                        $legacy_options['warning_banner'] = (int) ( 1 === (int) $legacy_banner );
+                }
+        }
+
+        $options = wp_parse_args( $legacy_options, $defaults );
+        $options = staging_bot_block_sanitize_options( $options );
+        update_option( 'staging_bot_block_options', $options );
+
+        return $options;
+}
+
+function staging_bot_block_map_legacy_mode( $legacy_choice ) {
+        $map = array(
+                'Block Bots'            => 'block',
+                'Redirect Bots'         => 'redirect_bots',
+                'Redirect Bots & Users' => 'redirect_all',
+        );
+
+        return isset( $map[ $legacy_choice ] ) ? $map[ $legacy_choice ] : 'block';
+}
+
+function staging_bot_block_activate() {
+        $stored = get_option( 'staging_bot_block_options', null );
+
+        if ( null === $stored ) {
+                $options = staging_bot_block_get_default_options();
+        } else {
+                $options = staging_bot_block_sanitize_options( (array) $stored );
+        }
+
+        update_option( 'staging_bot_block_options', $options );
+}
