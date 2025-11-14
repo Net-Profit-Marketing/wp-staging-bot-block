@@ -9,28 +9,30 @@
  */
 function bb_enable_warning_banner_function() {
 
-        $options = staging_bot_block_get_options();
+$options = staging_bot_block_get_options();
 
-        if ( empty( $options['enabled'] ) || empty( $options['warning_banner'] ) ) {
-                return;
-        }
+if ( empty( $options['enabled'] ) || empty( $options['warning_banner'] ) ) {
+return;
+}
 
-        $bb_warning_message = '';
-        $settings_url       = esc_url( admin_url( 'admin.php?page=block-bot-redirect-setting-page' ) );
-        $redirect_url       = isset( $options['redirect_url'] ) ? $options['redirect_url'] : '';
+$mode          = staging_bot_block_get_effective_mode( $options );
+$bb_warning_message = '';
+$settings_url       = esc_url( admin_url( 'admin.php?page=block-bot-redirect-setting-page' ) );
+$link_text          = esc_html__( 'Edit Settings', 'staging-bot-block' );
+$link               = sprintf( ' <a href="%1$s">%2$s</a>.', $settings_url, $link_text );
 
-        if ( 'block' === $options['mode'] ) {
-                $bb_warning_message = 'Staging site is currently blocking search engine bots. <a href="' . $settings_url . '">Edit Settings</a>.';
-        } elseif ( 'redirect_bots' === $options['mode'] ) {
-                $bb_warning_message = 'Staging site is currently redirecting bots to ' . esc_html( $redirect_url ) . '. <a href="' . $settings_url . '">Edit Settings</a>.';
-        } elseif ( 'redirect_all' === $options['mode'] ) {
-                $bb_warning_message = 'Staging site is currently redirecting users and bots to ' . esc_html( $redirect_url ) . '. <a href="' . $settings_url . '">Edit Settings</a>.';
-        }
+if ( 'block' === $mode ) {
+$bb_warning_message = esc_html__( 'Bots are being blocked on this staging site.', 'staging-bot-block' );
+} elseif ( 'redirect_bots' === $mode ) {
+$bb_warning_message = esc_html__( 'Search engine bots are being redirected to the live site.', 'staging-bot-block' );
+} elseif ( 'redirect_all' === $mode ) {
+$bb_warning_message = esc_html__( 'All visitors are being redirected from this staging domain.', 'staging-bot-block' );
+}
 
-        if ( $bb_warning_message ) {
-                $class = 'notice notice-warning is-dismissible';
-                printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $bb_warning_message ) );
-        }
+if ( $bb_warning_message ) {
+$class = 'notice notice-error';
+printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post( $bb_warning_message . $link ) );
+}
 
 }
 
