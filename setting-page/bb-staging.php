@@ -17,7 +17,7 @@ function staging_bot_block_get_redirect_settings_post_id() {
 			'post_status' => 'any',
 			'orderby'     => 'date',
 			'order'       => 'DESC',
-			'meta_key'    => 'bb_redirect_enabled',
+			'meta_key'    => 'bb_redirect_enabled', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 		),
 	);
 
