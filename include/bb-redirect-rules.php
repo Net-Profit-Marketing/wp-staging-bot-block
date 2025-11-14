@@ -8,7 +8,7 @@ function staging_bot_block_send_robots_header() {
 
 function staging_bot_block_should_bypass_request() {
 	$uri = isset( $_SERVER['REQUEST_URI'] )
-		? wp_unslash( $_SERVER['REQUEST_URI'] )
+		? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) )
 		: '';
 
 	return ( false !== stripos( $uri, '.well-known/acme-challenge' ) );
