@@ -49,23 +49,23 @@ function get_bb_redirect_settings_post_id() {
  */
 function bb_page_menu() {
 
-        add_menu_page(
+add_menu_page(
 
-                __( 'Bot BLock', 'bot-bLockdomain' ),
+__( 'Staging Bot Block', 'staging-bot-block' ),
 
-                __( 'Bot BLock', 'bot-bLockdomain' ),
+__( 'Staging Bot Block', 'staging-bot-block' ),
 
-                'manage_options',
+'manage_options',
 
-                'block-bot-redirect-setting-page',
+'block-bot-redirect-setting-page',
 
-                'bb_admin_page_contents',
+'bb_admin_page_contents',
 
-                'dashicons-schedule',
+'dashicons-schedule',
 
-                3
+3
 
-        );
+);
 
 }
 
@@ -84,102 +84,103 @@ function bb_admin_page_contents() {
 
         $options = staging_bot_block_get_options();
         ?>
-        <div class="wrap">
-                <h1 class="wp-heading-inline">
-                        <?php esc_html_e( 'Staging Bot Block', 'bot-bLockdomain' ); ?>
-                </h1>
-                <p></p>
-        </div>
-        <?php
-        if ( isset( $_GET['settings-updated'] ) ) {
-                add_settings_error( 'staging_bot_block_options', 'staging_bot_block_options', __( 'Settings saved.', 'bot-bLockdomain' ), 'updated' );
-        }
-        settings_errors( 'staging_bot_block_options' );
-        ?>
-        <form method="post" id="bb_redirect_settings_mainform" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
-                <?php settings_fields( 'staging_bot_block_options_group' ); ?>
+<div class="wrap">
+<h1 class="wp-heading-inline">
+<?php esc_html_e( 'Staging Bot Block', 'staging-bot-block' ); ?>
+</h1>
+<p></p>
+</div>
+<?php
+if ( isset( $_GET['settings-updated'] ) ) {
+add_settings_error( 'staging_bot_block_options', 'staging_bot_block_options', __( 'Settings saved.', 'staging-bot-block' ), 'updated' );
+}
+settings_errors( 'staging_bot_block_options' );
+?>
+<form method="post" id="bb_redirect_settings_mainform" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+<?php settings_fields( 'staging_bot_block_options_group' ); ?>
                 <h1 class="screen-reader-text">Staging Bot Block</h1>
 
-                <p><?php esc_html_e( 'A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about setting robots.txt to nofollow and accidentally deindexing the production site.', 'bot-bLockdomain' ); ?></p>
-                <p><?php printf( wp_kses_post( __( 'Brought to you by the team at %s.', 'bot-bLockdomain' ) ), '<a href="' . esc_url( 'https://www.netprofitmarketing.com' ) . '" target="_blank" rel="noopener noreferrer">Net Profit Marketing</a>' ); ?></p>
+<p><?php esc_html_e( 'A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about setting robots.txt to nofollow and accidentally deindexing the production site.', 'staging-bot-block' ); ?></p>
+<p><?php printf( wp_kses_post( __( 'Brought to you by the team at %s.', 'staging-bot-block' ) ), '<a href="' . esc_url( 'https://www.netprofitmarketing.com' ) . '" target="_blank" rel="noopener noreferrer">Net Profit Marketing</a>' ); ?></p>
 
                 <table class="form-table" role="presentation">
                         <tbody>
-                                <tr>
-                                        <th scope="row">
-                                                <label for="staging_bot_block_enabled"><?php esc_html_e( 'Enable Staging Bot Block', 'bot-bLockdomain' ); ?></label>
-                                        </th>
-                                        <td>
-                                                <label for="staging_bot_block_enabled">
-                                                        <input type="checkbox" name="staging_bot_block_options[enabled]" id="staging_bot_block_enabled" value="1" <?php checked( ! empty( $options['enabled'] ) ); ?>>
-                                                        <?php esc_html_e( 'Enable Staging Bot Block', 'bot-bLockdomain' ); ?>
-                                                </label>
-                                                <p class="description"><?php esc_html_e( 'Turn the plugin on or off for this site.', 'bot-bLockdomain' ); ?></p>
-                                        </td>
-                                </tr>
-                                <tr>
-                                        <th scope="row"><?php esc_html_e( 'Bot handling mode', 'bot-bLockdomain' ); ?></th>
-                                        <td>
-                                                <fieldset>
-                                                        <legend class="screen-reader-text">
-                                                                <span><?php esc_html_e( 'Bot handling mode', 'bot-bLockdomain' ); ?></span>
-                                                        </legend>
-                                                        <label for="staging_bot_block_mode_block">
-                                                                <input type="radio" id="staging_bot_block_mode_block" name="staging_bot_block_options[mode]" value="block" <?php checked( $options['mode'], 'block' ); ?>>
-                                                                <?php esc_html_e( 'Block search engine bots (recommended for staging)', 'bot-bLockdomain' ); ?>
-                                                        </label><br>
-                                                        <label for="staging_bot_block_mode_redirect_bots">
-                                                                <input type="radio" id="staging_bot_block_mode_redirect_bots" name="staging_bot_block_options[mode]" value="redirect_bots" <?php checked( $options['mode'], 'redirect_bots' ); ?>>
-                                                                <?php esc_html_e( 'Redirect search engine bots to live site', 'bot-bLockdomain' ); ?>
-                                                        </label><br>
-                                                        <label for="staging_bot_block_mode_redirect_all">
-                                                                <input type="radio" id="staging_bot_block_mode_redirect_all" name="staging_bot_block_options[mode]" value="redirect_all" <?php checked( $options['mode'], 'redirect_all' ); ?>>
-                                                                <?php esc_html_e( 'Redirect everyone (bots and users) to live site', 'bot-bLockdomain' ); ?>
-                                                        </label>
-                                                </fieldset>
-                                        </td>
-                                </tr>
-                                <tr>
-                                        <th scope="row">
-                                                <label for="staging_bot_block_warning_banner"><?php esc_html_e( 'Show admin warning banner', 'bot-bLockdomain' ); ?></label>
-                                        </th>
-                                        <td>
-                                                <label for="staging_bot_block_warning_banner">
-                                                        <input type="checkbox" name="staging_bot_block_options[warning_banner]" id="staging_bot_block_warning_banner" value="1" <?php checked( ! empty( $options['warning_banner'] ) ); ?>>
-                                                        <?php esc_html_e( 'Show admin warning banner', 'bot-bLockdomain' ); ?>
-                                                </label>
-                                                <p class="description"><?php esc_html_e( 'Show a persistent notice in the WordPress admin when Staging Bot Block is enabled.', 'bot-bLockdomain' ); ?></p>
-                                        </td>
-                                </tr>
-                                <tr>
-                                        <th scope="row">
-                                                <label for="staging_bot_block_redirect_url"><?php esc_html_e( 'Redirect URL', 'bot-bLockdomain' ); ?></label>
-                                        </th>
-                                        <td>
-                                                <input class="regular-text" type="text" name="staging_bot_block_options[redirect_url]" id="staging_bot_block_redirect_url" value="<?php echo esc_attr( $options['redirect_url'] ); ?>" placeholder="https://example.com/">
-                                                <p class="description"><?php esc_html_e( 'Target URL for redirects in “Redirect” modes, for example the production site homepage.', 'bot-bLockdomain' ); ?></p>
-                                        </td>
-                                </tr>
-                                <tr>
-                                        <th scope="row">
-                                                <label for="staging_bot_block_redirect_type"><?php esc_html_e( 'Redirect type', 'bot-bLockdomain' ); ?></label>
-                                        </th>
-                                        <td>
-                                                <select name="staging_bot_block_options[redirect_type]" id="staging_bot_block_redirect_type">
-                                                        <option value="302" <?php selected( (int) $options['redirect_type'], 302 ); ?>><?php esc_html_e( 'Temporary (302)', 'bot-bLockdomain' ); ?></option>
-                                                        <option value="301" <?php selected( (int) $options['redirect_type'], 301 ); ?>><?php esc_html_e( 'Permanent (301)', 'bot-bLockdomain' ); ?></option>
-                                                </select>
-                                        </td>
-                                </tr>
-                                <tr>
-                                        <th scope="row">
-                                                <label for="staging_bot_block_extra_user_agents"><?php esc_html_e( 'Additional user agents to block', 'bot-bLockdomain' ); ?></label>
-                                        </th>
-                                        <td>
-                                                <textarea name="staging_bot_block_options[extra_user_agents]" id="staging_bot_block_extra_user_agents" rows="5" class="large-text code"><?php echo esc_textarea( $options['extra_user_agents'] ); ?></textarea>
-                                                <p class="description"><?php esc_html_e( 'Optional. One user agent or substring per line. These will be added to the default bot list.', 'bot-bLockdomain' ); ?></p>
-                                        </td>
-                                </tr>
+<tr>
+<th scope="row">
+<label for="staging_bot_block_enabled"><?php esc_html_e( 'Enable Staging Bot Block', 'staging-bot-block' ); ?></label>
+</th>
+<td>
+<label for="staging_bot_block_enabled">
+<input type="checkbox" name="staging_bot_block_options[enabled]" id="staging_bot_block_enabled" value="1" <?php checked( ! empty( $options['enabled'] ) ); ?>>
+<?php esc_html_e( 'Enable Staging Bot Block', 'staging-bot-block' ); ?>
+</label>
+<p class="description"><?php esc_html_e( 'Turn the plugin on for this site.', 'staging-bot-block' ); ?></p>
+</td>
+</tr>
+<tr>
+<th scope="row"><?php esc_html_e( 'Bot handling mode', 'staging-bot-block' ); ?></th>
+<td>
+<fieldset>
+<legend class="screen-reader-text">
+<span><?php esc_html_e( 'Bot handling mode', 'staging-bot-block' ); ?></span>
+</legend>
+<label for="staging_bot_block_mode_block">
+<input type="radio" id="staging_bot_block_mode_block" name="staging_bot_block_options[mode]" value="block" <?php checked( $options['mode'], 'block' ); ?>>
+<?php esc_html_e( 'Block search engine bots (recommended for staging)', 'staging-bot-block' ); ?>
+</label><br>
+<label for="staging_bot_block_mode_redirect_bots">
+<input type="radio" id="staging_bot_block_mode_redirect_bots" name="staging_bot_block_options[mode]" value="redirect_bots" <?php checked( $options['mode'], 'redirect_bots' ); ?>>
+<?php esc_html_e( 'Redirect search engine bots to the live site', 'staging-bot-block' ); ?>
+</label><br>
+<label for="staging_bot_block_mode_redirect_all">
+<input type="radio" id="staging_bot_block_mode_redirect_all" name="staging_bot_block_options[mode]" value="redirect_all" <?php checked( $options['mode'], 'redirect_all' ); ?>>
+<?php esc_html_e( 'Redirect everyone (bots and users) to the live site', 'staging-bot-block' ); ?>
+</label>
+</fieldset>
+</td>
+</tr>
+<tr>
+<th scope="row">
+<label for="staging_bot_block_warning_banner"><?php esc_html_e( 'Show admin warning banner', 'staging-bot-block' ); ?></label>
+</th>
+<td>
+<label for="staging_bot_block_warning_banner">
+<input type="checkbox" name="staging_bot_block_options[warning_banner]" id="staging_bot_block_warning_banner" value="1" <?php checked( ! empty( $options['warning_banner'] ) ); ?>>
+<?php esc_html_e( 'Show admin warning banner', 'staging-bot-block' ); ?>
+</label>
+<p class="description"><?php esc_html_e( 'Show a persistent notice in the WordPress admin while this plugin is enabled.', 'staging-bot-block' ); ?></p>
+</td>
+</tr>
+<tr>
+<th scope="row">
+<label for="staging_bot_block_redirect_url"><?php esc_html_e( 'Redirect URL', 'staging-bot-block' ); ?></label>
+</th>
+<td>
+<input class="regular-text" type="text" name="staging_bot_block_options[redirect_url]" id="staging_bot_block_redirect_url" value="<?php echo esc_attr( $options['redirect_url'] ); ?>" placeholder="https://example.com/">
+<p class="description"><?php esc_html_e( 'Used only in redirect modes. Enter the URL of your live site, for example https://example.com.', 'staging-bot-block' ); ?></p>
+</td>
+</tr>
+<tr>
+<th scope="row">
+<label for="staging_bot_block_redirect_type"><?php esc_html_e( 'Redirect type', 'staging-bot-block' ); ?></label>
+</th>
+<td>
+<select name="staging_bot_block_options[redirect_type]" id="staging_bot_block_redirect_type">
+<option value="302" <?php selected( (int) $options['redirect_type'], 302 ); ?>><?php esc_html_e( 'Temporary (302)', 'staging-bot-block' ); ?></option>
+<option value="301" <?php selected( (int) $options['redirect_type'], 301 ); ?>><?php esc_html_e( 'Permanent (301)', 'staging-bot-block' ); ?></option>
+</select>
+<p class="description"><?php esc_html_e( 'Use 302 while testing. Use 301 only when retiring this staging domain.', 'staging-bot-block' ); ?></p>
+</td>
+</tr>
+<tr>
+<th scope="row">
+<label for="staging_bot_block_extra_user_agents"><?php esc_html_e( 'Additional user agents to block', 'staging-bot-block' ); ?></label>
+</th>
+<td>
+<textarea name="staging_bot_block_options[extra_user_agents]" id="staging_bot_block_extra_user_agents" rows="5" class="large-text code"><?php echo esc_textarea( $options['extra_user_agents'] ); ?></textarea>
+<p class="description"><?php esc_html_e( 'Optional. One user agent or substring per line. These are added to the default search engine list.', 'staging-bot-block' ); ?></p>
+</td>
+</tr>
                         </tbody>
                 </table>
 
