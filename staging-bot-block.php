@@ -6,7 +6,7 @@ Tags: bot-block,staging
 Author: Net Profit Marketing
 Author URI: https://www.netprofitmarketing.com
 Requires at least: 4.6
-Tested up to: 6.7.1
+Tested up to: 6.8
 Stable tag: 1.0.0
 Version: 1.0.0
 Requires PHP: 7.2
@@ -30,8 +30,12 @@ License: GPL v2 or later
 
 if ( ! defined( 'ABSPATH' ) ) {
 
-	exit;
+exit;
 
+}
+
+if ( ! defined( 'STAGING_BOT_BLOCK_VERSION' ) ) {
+define( 'STAGING_BOT_BLOCK_VERSION', '1.0.0' );
 }
 
 
@@ -40,33 +44,33 @@ require plugin_dir_path( __FILE__ ) . 'setting-page/bb-staging.php';
 
 // Enqueue Assets
 
-function enqueue_assets() {
+function staging_bot_block_enqueue_assets() {
 
-	wp_enqueue_style( 'bb-main-style', plugin_dir_url( __FILE__ ) . 'assets/css/bb-main.css' );
+wp_enqueue_style( 'bb-main-style', plugin_dir_url( __FILE__ ) . 'assets/css/bb-main.css', array(), STAGING_BOT_BLOCK_VERSION );
 
-	wp_enqueue_script( 'bb-main-js', plugin_dir_url( __FILE__ ) . 'assets/js/bb-main.js', array(), '', true );
+wp_enqueue_script( 'bb-main-js', plugin_dir_url( __FILE__ ) . 'assets/js/bb-main.js', array(), STAGING_BOT_BLOCK_VERSION, true );
 
 }
 
-add_action( 'admin_enqueue_scripts', 'enqueue_assets' );
+add_action( 'admin_enqueue_scripts', 'staging_bot_block_enqueue_assets' );
 
 
 
-function callback( $buffer ) {
-	return $buffer;
+function staging_bot_block_buffer_callback( $buffer ) {
+return $buffer;
 }
 
-function buffer_start() {
-	ob_start( 'callback' );
+function staging_bot_block_buffer_start() {
+ob_start( 'staging_bot_block_buffer_callback' );
 }
 
-function buffer_end() {
-	ob_end_flush();
+function staging_bot_block_buffer_end() {
+ob_end_flush();
 }
 
-add_action( 'init', 'buffer_start' );
+add_action( 'init', 'staging_bot_block_buffer_start' );
 
-add_action( 'wp_footer', 'buffer_end' );
+add_action( 'wp_footer', 'staging_bot_block_buffer_end' );
 
 
 

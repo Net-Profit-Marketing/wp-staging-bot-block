@@ -1,6 +1,6 @@
 <?php
 
-function sbb_get_default_bots() {
+function staging_bot_block_get_default_bots() {
         return array(
                 'googlebot',
                 'googlebot-image',
@@ -23,8 +23,8 @@ function sbb_get_default_bots() {
         );
 }
 
-function sbb_get_blocked_bots() {
-        $bots    = sbb_get_default_bots();
+function staging_bot_block_get_blocked_bots() {
+        $bots    = staging_bot_block_get_default_bots();
         $options = staging_bot_block_get_options();
 
         if ( ! empty( $options['extra_user_agents'] ) ) {
@@ -42,13 +42,13 @@ function sbb_get_blocked_bots() {
         return $bots;
 }
 
-function sbb_is_blocked_bot( $ua ) {
+function staging_bot_block_is_blocked_bot( $ua ) {
         if ( empty( $ua ) ) {
                 return false;
         }
 
         $ua      = strtolower( $ua );
-        $blocked = sbb_get_blocked_bots();
+        $blocked = staging_bot_block_get_blocked_bots();
 
         foreach ( $blocked as $bot ) {
                 $bot = strtolower( trim( $bot ) );

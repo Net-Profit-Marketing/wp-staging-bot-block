@@ -78,7 +78,7 @@ return $mode;
 function staging_bot_block_migrate_legacy_settings() {
         $defaults       = staging_bot_block_get_default_options();
         $legacy_options = array();
-        $post_id        = get_bb_redirect_settings_post_id();
+        $post_id        = staging_bot_block_get_redirect_settings_post_id();
 
         if ( $post_id ) {
                 $legacy_enabled = get_post_meta( $post_id, 'bb_redirect_enabled', true );
