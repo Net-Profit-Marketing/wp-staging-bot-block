@@ -1,5 +1,5 @@
 === Staging Bot Block ===
-Contributors: netprofitmarketing
+Contributors: jaredpomranky
 Tags: bot-block, staging, seo, robots, redirects
 Requires at least: 4.6
 Tested up to: 6.7.1
