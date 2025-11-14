@@ -7,7 +7,7 @@
  *
  * @return void
  */
-function bb_enable_warning_banner_function() {
+function staging_bot_block_enable_warning_banner() {
 
 $options = staging_bot_block_get_options();
 
@@ -36,4 +36,4 @@ printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), wp_kses_post(
 
 }
 
-add_action( 'admin_notices', 'bb_enable_warning_banner_function' );
+add_action( 'admin_notices', 'staging_bot_block_enable_warning_banner' );

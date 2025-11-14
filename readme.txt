@@ -2,13 +2,13 @@
 Contributors: jaredpomranky
 Tags: bot-block, staging, seo, robots, redirects
 Requires at least: 4.6
-Tested up to: 6.7.1
+Tested up to: 6.8
 Requires PHP: 7.2
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Prevent search engines from indexing staging sites by blocking or redirecting bots. Includes a persistent admin warning banner so staging safety isn’t forgotten.
+Prevent search engines from indexing staging sites by blocking or redirecting bots, with a clear admin warning banner.
 
 == Description ==
 

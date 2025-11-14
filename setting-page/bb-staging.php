@@ -1,6 +1,6 @@
 <?php
 
-function get_bb_redirect_settings_post_id() {
+function staging_bot_block_get_redirect_settings_post_id() {
 
 	$bb_redirect_setting_id = '';
 	$queries                = array(
@@ -47,7 +47,7 @@ function get_bb_redirect_settings_post_id() {
  *
  * @return void
  */
-function bb_page_menu() {
+function staging_bot_block_admin_menu() {
 
 add_menu_page(
 
@@ -59,7 +59,7 @@ __( 'Staging Bot Block', 'staging-bot-block' ),
 
 'block-bot-redirect-setting-page',
 
-'bb_admin_page_contents',
+'staging_bot_block_admin_page_contents',
 
 'dashicons-schedule',
 
@@ -69,7 +69,7 @@ __( 'Staging Bot Block', 'staging-bot-block' ),
 
 }
 
-add_action( 'admin_menu', 'bb_page_menu' );
+add_action( 'admin_menu', 'staging_bot_block_admin_menu' );
 
 
 
@@ -80,7 +80,7 @@ add_action( 'admin_menu', 'bb_page_menu' );
  *
  * @return void
  */
-function bb_admin_page_contents() {
+function staging_bot_block_admin_page_contents() {
 
         $options = staging_bot_block_get_options();
         ?>
@@ -91,7 +91,10 @@ function bb_admin_page_contents() {
 <p></p>
 </div>
 <?php
-if ( isset( $_GET['settings-updated'] ) ) {
+$settings_updated = filter_input( INPUT_GET, 'settings-updated', FILTER_SANITIZE_STRING );
+
+if ( $settings_updated ) {
+// options.php validates the submission nonce via the Settings API.
 add_settings_error( 'staging_bot_block_options', 'staging_bot_block_options', __( 'Settings saved.', 'staging-bot-block' ), 'updated' );
 }
 settings_errors( 'staging_bot_block_options' );
