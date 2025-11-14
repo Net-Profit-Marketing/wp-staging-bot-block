@@ -108,7 +108,17 @@ settings_errors( 'staging_bot_block_options' );
 </style>
 
 <p class="sbb-intro"><?php esc_html_e( 'A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about setting robots.txt to nofollow and accidentally deindexing the production site.', 'staging-bot-block' ); ?></p>
-<p><?php printf( wp_kses_post( __( 'Brought to you by the team at %s.', 'staging-bot-block' ) ), '<a href="' . esc_url( 'https://www.netprofitmarketing.com' ) . '" target="_blank" rel="noopener noreferrer">Net Profit Marketing</a>' ); ?></p>
+<p>
+	<?php
+	/* translators: %s: Net Profit Marketing link */
+	printf(
+		wp_kses_post(
+			__( 'Brought to you by the team at %s.', 'staging-bot-block' )
+		),
+		'<a href="' . esc_url( 'https://www.netprofitmarketing.com' ) . '" target="_blank" rel="noopener noreferrer">Net Profit Marketing</a>'
+	);
+	?>
+</p>
 
                 <table class="form-table" role="presentation">
                         <tbody>
