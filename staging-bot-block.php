@@ -29,18 +29,20 @@ License: GPL v2 or later
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
-
-exit;
-
+	exit;
 }
+
 
 if ( ! defined( 'STAGING_BOT_BLOCK_VERSION' ) ) {
-define( 'STAGING_BOT_BLOCK_VERSION', '1.0.0' );
+	define( 'STAGING_BOT_BLOCK_VERSION', '1.0.0' );
 }
-
 
 
 require plugin_dir_path( __FILE__ ) . 'setting-page/bb-staging.php';
+require plugin_dir_path( __FILE__ ) . 'include/bb-action.php';
+require plugin_dir_path( __FILE__ ) . 'include/bb-warning-banner.php';
+require plugin_dir_path( __FILE__ ) . 'include/bb-detects-bots.php';
+require plugin_dir_path( __FILE__ ) . 'include/bb-redirect-rules.php';
 
 // Enqueue Assets
 
@@ -55,32 +57,6 @@ wp_enqueue_script( 'bb-main-js', plugin_dir_url( __FILE__ ) . 'assets/js/bb-main
 add_action( 'admin_enqueue_scripts', 'staging_bot_block_enqueue_assets' );
 
 
-
-function staging_bot_block_buffer_callback( $buffer ) {
-return $buffer;
-}
-
-function staging_bot_block_buffer_start() {
-ob_start( 'staging_bot_block_buffer_callback' );
-}
-
-function staging_bot_block_buffer_end() {
-ob_end_flush();
-}
-
-add_action( 'init', 'staging_bot_block_buffer_start' );
-
-add_action( 'wp_footer', 'staging_bot_block_buffer_end' );
-
-
-
-require plugin_dir_path( __FILE__ ) . 'include/bb-action.php';
-
-require plugin_dir_path( __FILE__ ) . 'include/bb-warning-banner.php';
-
-require plugin_dir_path( __FILE__ ) . 'include/bb-detects-bots.php';
-
-require plugin_dir_path( __FILE__ ) . 'include/bb-redirect-rules.php';
 
 register_activation_hook( __FILE__, 'staging_bot_block_activate' );
 
