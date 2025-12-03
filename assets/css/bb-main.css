@@ -124,6 +124,11 @@
 .bb_redirect_url_error_cls{color: red;}
 .bb-redirect-tool-icon-img{vertical-align: middle;}
 
+.sbb-intro {
+    max-width: 760px;
+    line-height: 1.6;
+}
+
 /*Media Query*/
 @media (max-width: 760px) {
 
