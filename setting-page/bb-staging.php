@@ -103,13 +103,6 @@ settings_errors( 'staging_bot_block_options' );
 <?php settings_fields( 'staging_bot_block_options_group' ); ?>
                 <h1 class="screen-reader-text">Staging Bot Block</h1>
 
-<style>
-        .sbb-intro {
-                max-width: 760px;
-                line-height: 1.6;
-        }
-</style>
-
 <p class="sbb-intro"><?php esc_html_e( 'A plugin to use when developing a site or hosting a staging environment. It will help fix issues with staging sites getting indexed by Google, redirecting staging sites once they do get indexed, and forgetting about setting robots.txt to nofollow and accidentally deindexing the production site.', 'staging-bot-block' ); ?></p>
 <p>
 	<?php
