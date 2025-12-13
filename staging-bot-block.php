@@ -6,7 +6,7 @@ Tags: bot-block,staging
 Author: Net Profit Marketing
 Author URI: https://www.netprofitmarketing.com
 Requires at least: 4.6
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag: 1.0.0
 Version: 1.0.0
 Requires PHP: 7.2
