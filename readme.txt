@@ -4,7 +4,7 @@ Tags: bot-block, staging, seo, robots, redirects
 Requires at least: 4.6
 Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,3 +63,6 @@ This usually means your CDN or cache plugin is serving cached HTML. See the “I
 * Admin warning banner
 * Optional extra user agents field
 * Activation notice
+
+= 1.0.1 =
+* Tested up to 6.9
