@@ -1,0 +1,20 @@
+{
+  "slug": "staging-bot-block",
+  "bootstrap": "staging-bot-block.php",
+  "required_files": [
+    "readme.txt",
+    "uninstall.php",
+    "include/bb-action.php",
+    "include/bb-detects-bots.php",
+    "include/bb-redirect-rules.php",
+    "include/bb-warning-banner.php",
+    "setting-page/bb-staging.php",
+    "assets/css/bb-main.css",
+    "assets/js/bb-main.js"
+  ],
+  "required_directories": ["include", "setting-page", "assets/css", "assets/js"],
+  "version_constant": {
+    "name": "STAGING_BOT_BLOCK_VERSION",
+    "file": "staging-bot-block.php"
+  }
+}

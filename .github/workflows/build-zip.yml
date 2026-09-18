@@ -1,0 +1,53 @@
+name: Build release ZIP
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
+  plugin-check:
+    uses: ./.github/workflows/plugin-check.yml
+  package:
+    needs: [validate, plugin-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Prepare the verified .distignore-filtered slug directory
+        id: package
+        env:
+          STAGED_PLUGIN: ${{ runner.temp }}/staging-bot-block-build
+        run: |
+          python -B tools/package-release.py
+          python -c "import glob,os,zipfile; zipfile.ZipFile(glob.glob('dist/staging-bot-block-*.zip')[0]).extractall(os.environ['STAGED_PLUGIN'])"
+      - name: Build with the documented 10up stable channel
+        uses: 10up/action-wordpress-plugin-build-zip@stable
+        with:
+          retention-days: 7
+        env:
+          SLUG: staging-bot-block
+          # Include the slug folder itself; 10up otherwise archives its contents at ZIP root.
+          BUILD_DIR: ${{ runner.temp }}/staging-bot-block-build
+      - name: Verify the actual 10up ZIP against the source checkout
+        env:
+          ACTION_ARCHIVE: ${{ github.event.repository.name }}.zip
+          INSTALLABLE_ARCHIVE: dist/${{ steps.package.outputs.archive }}
+        run: |
+          cp -- "$ACTION_ARCHIVE" "$INSTALLABLE_ARCHIVE"
+          python -B tools/package-release.py --verify "$INSTALLABLE_ARCHIVE"
+      - name: Upload the installable ZIP
+        uses: actions/upload-artifact@v7
+        with:
+          # archive:false uses the filename itself as the artifact name.
+          path: dist/${{ steps.package.outputs.archive }}
+          archive: false
+          retention-days: 30
+          if-no-files-found: error
