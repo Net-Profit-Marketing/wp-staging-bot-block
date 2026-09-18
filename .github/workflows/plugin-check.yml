@@ -30,6 +30,7 @@ jobs:
           printf '%s\n' '{"core":"https://wordpress.org/wordpress-7.1.1.zip","phpVersion":"8.4","mappings":{"wp-content/sbb-tests":"./tests"}}' > .wp-env.override.json
       - uses: wordpress/plugin-check-action@v1
         with:
+          repo-token: ''
           build-dir: dist/plugin-check/staging-bot-block
           wp-version: latest
           slug: staging-bot-block
@@ -40,7 +41,8 @@ jobs:
           wp-env run cli env SBB_DISPOSABLE_TESTS=1 wp eval-file wp-content/sbb-tests/wp-integration.php
       - name: Stop the disposable WordPress environment
         if: always()
+        continue-on-error: true
         run: |
           if command -v wp-env >/dev/null 2>&1; then
-            wp-env destroy --yes
+            wp-env destroy --force
           fi
