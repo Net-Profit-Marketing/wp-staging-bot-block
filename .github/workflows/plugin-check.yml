@@ -1,0 +1,48 @@
+name: Plugin Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Build and verify the distributable plugin
+        run: |
+          python -B tools/package-release.py
+          python -c "import glob,zipfile; zipfile.ZipFile(glob.glob('dist/staging-bot-block-*.zip')[0]).extractall('dist/plugin-check')"
+      # v1 supports only latest/trunk in wp-version. An override pins the requested release.
+      - name: Pin the WordPress runtime
+        run: |
+          printf '%s\n' '{"core":"https://wordpress.org/wordpress-7.1.1.zip","phpVersion":"8.4","mappings":{"wp-content/sbb-tests":"./tests"}}' > .wp-env.override.json
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          repo-token: ''
+          build-dir: dist/plugin-check/staging-bot-block
+          wp-version: latest
+          slug: staging-bot-block
+          strict: true
+      - name: Verify the actual WordPress version and real API behavior
+        run: |
+          wp-env run cli wp eval 'if ( "7.1.1" !== get_bloginfo( "version" ) ) { WP_CLI::error( "WordPress version differs from the release target." ); }'
+          wp-env run cli env SBB_DISPOSABLE_TESTS=1 wp eval-file wp-content/sbb-tests/wp-integration.php
+      - name: Stop the disposable WordPress environment
+        if: always()
+        continue-on-error: true
+        run: |
+          if command -v wp-env >/dev/null 2>&1; then
+            wp-env destroy --force
+          fi

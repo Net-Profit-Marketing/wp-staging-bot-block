@@ -1,0 +1,38 @@
+name: Validate plugin
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.1', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer validate --strict
+      - run: python -B tools/check-artwork.py --require-tracked
+      - run: python -B tools/validate.py

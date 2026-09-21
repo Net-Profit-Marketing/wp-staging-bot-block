@@ -1,0 +1,49 @@
+name: Deploy WordPress.org
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: ${{ !github.event.release.prerelease }}
+    uses: ./.github/workflows/validate.yml
+  plugin-check:
+    if: ${{ !github.event.release.prerelease }}
+    uses: ./.github/workflows/plugin-check.yml
+  deploy:
+    if: ${{ !github.event.release.prerelease }}
+    needs: [validate, plugin-check]
+    runs-on: ubuntu-latest
+    environment: wordpress-org
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Require exact release version and verify runtime package and artwork
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          STAGED_PLUGIN: ${{ runner.temp }}/staging-bot-block-deploy
+        run: |
+          python -B tools/package-release.py --tag "$RELEASE_TAG"
+          python -B tools/check-artwork.py --require-tracked
+          python -c "import glob,os,zipfile; zipfile.ZipFile(glob.glob('dist/staging-bot-block-*.zip')[0]).extractall(os.environ['STAGED_PLUGIN'])"
+      - name: Deploy this release to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: staging-bot-block
+          # Use the exact validated version, bypassing the action's default v-prefix stripping.
+          VERSION: ${{ steps.release.outputs.version }}
+          ASSETS_DIR: .wordpress-org
+          # Deploy the exact verified .distignore-filtered payload; artwork stays separate.
+          BUILD_DIR: ${{ runner.temp }}/staging-bot-block-deploy/staging-bot-block

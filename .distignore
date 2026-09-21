@@ -1,0 +1,91 @@
+# Installable source inventory used by local packaging and release staging.
+# Exclusion-only component globs: *, ?, [abc]. The Python verifier is case-insensitive.
+# Leading / or a multi-component path anchors to the repository root.
+# Trailing / matches directories. Blank lines and # comments are ignored.
+# ! re-inclusion, ** and backslashes are unsupported. See the shared standard.
+
+# Repository and development infrastructure
+.git*
+.github/
+.distignore
+AGENTS.md
+.agents/
+.codex/
+tests/
+/dist/
+node_modules/
+coverage/
+.cache/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.phpunit*
+
+# These paths are development-only; this plugin has no runtime dependencies.
+/vendor/
+/build/
+/tools/
+/README.md
+/docs/
+/composer.json
+/composer.lock
+/phpcs.xml.dist
+/.phpcs-cache
+/.wordpress-org/
+/.wp-env.json
+/.wp-env.override.json
+/screenshot-*.png
+/banner-*.png
+/icon-*.png
+/zipfile/
+
+# Editors and IDEs
+.vscode/
+.idea/
+.vs/
+.fleet/
+.editorconfig
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# OS metadata, including nested copies
+.DS_Store
+._*
+__MACOSX/
+.AppleDouble/
+.LSOverride
+.Spotlight-V100/
+.Trashes/
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+
+# Generated packages, temporary files, backups and logs
+*.zip
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+*.rej
+*.log
+logs/
+tmp/
+temp/
+
+# Local configuration, including examples that are not needed at runtime
+.env
+.env.*
+*.env
+*.env.*
+.npmrc
+.yarnrc*
+.pypirc
+auth.json
+wp-config.php
